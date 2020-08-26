@@ -1,0 +1,75 @@
+plugins {
+	id 'java-gradle-plugin'
+}
+
+
+defaultTasks 'build'
+
+
+group 'org.hurricanegames'
+version '1.0.0'
+
+
+import java.nio.file.Path
+import java.nio.file.Files
+
+
+Path projectDirectoryPath = projectDir.toPath().toAbsolutePath()
+
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ['src']
+		}
+		resources {
+			srcDirs = ['resources']
+		}
+	}
+	test {
+		java {
+			srcDirs = ['tests']
+		}
+	}
+}
+
+repositories {
+	mavenCentral()
+	jcenter()
+}
+
+compileJava {
+	options.encoding = 'UTF-8'
+	options.incremental = false
+}
+
+jar {
+	from sourceSets.main.java.srcDirs
+
+	archiveName = jar.archiveName
+}
+
+gradlePlugin {
+    plugins {
+        ManualGradleDependencySupplier {
+            id = 'org.hurricanegames.ManualGradleDependencySupplier'
+            implementationClass = 'org.hurricanegames.manualgradledependencysupplier.ManualGradleDependencySupplier'
+        }
+    }
+}
+
+
+task copyFinalJarToTarget(type: DefaultTask) {doLast{
+	Path targetJarDirectory = projectDirectoryPath.resolve('target')
+	Files.createDirectories(targetJarDirectory)
+	Files.copy(
+		jar.archivePath.toPath().toAbsolutePath(),
+		targetJarDirectory.resolve(jar.baseName + '.jar'),
+		java.nio.file.StandardCopyOption.REPLACE_EXISTING
+	)
+}}
+
+
+jar.finalizedBy(copyFinalJarToTarget)
