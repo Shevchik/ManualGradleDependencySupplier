@@ -5,12 +5,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-public class DownloadDependecySupplier implements DependencySupplier {
+public class DownloadDependencySupplier implements DependencySupplier {
 
 	private final String targetName;
 	private final URL downloadSourceURL;
 
-	public DownloadDependecySupplier(String targetName, URL downloadSourceURL) {
+	public DownloadDependencySupplier(String targetName, URL downloadSourceURL) {
 		this.targetName = targetName;
 		this.downloadSourceURL = downloadSourceURL;
 	}
