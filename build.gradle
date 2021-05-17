@@ -1,5 +1,6 @@
 plugins {
 	id 'java-gradle-plugin'
+	id 'maven-publish'
 }
 
 
@@ -47,8 +48,6 @@ compileJava {
 
 jar {
 	from sourceSets.main.java.srcDirs
-
-	archiveName = jar.archiveName
 }
 
 gradlePlugin {
@@ -61,15 +60,14 @@ gradlePlugin {
 }
 
 
-task copyFinalJarToTarget(type: DefaultTask) {doLast{
-	Path targetJarDirectory = projectDirectoryPath.resolve('target')
-	Files.createDirectories(targetJarDirectory)
-	Files.copy(
-		jar.archivePath.toPath().toAbsolutePath(),
-		targetJarDirectory.resolve(jar.baseName + '.jar'),
-		java.nio.file.StandardCopyOption.REPLACE_EXISTING
-	)
-}}
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
 
-
-jar.finalizedBy(copyFinalJarToTarget)
+            from components.java
+        }
+    }
+}
