@@ -17,8 +17,6 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.file.AbstractFileCollection;
-import org.gradle.api.internal.tasks.TaskDependencyInternal;
-import org.gradle.api.tasks.TaskDependency;
 
 
 public class ManualGradleDependencySupplier implements Plugin<Project> {
@@ -52,10 +50,6 @@ public class ManualGradleDependencySupplier implements Plugin<Project> {
 		}
 		return new AbstractFileCollection() {
 			final Set<File> files = new HashSet<>(libraries.stream().map(Path::toFile).collect(Collectors.toList()));
-			@Override
-			public TaskDependency getBuildDependencies() {
-				return TaskDependencyInternal.EMPTY;
-			}
 			@Override
 			public Set<File> getFiles() {
 				return files;
