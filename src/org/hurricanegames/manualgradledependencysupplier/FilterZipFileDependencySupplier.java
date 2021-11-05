@@ -13,6 +13,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class FilterZipFileDependencySupplier implements DependencySupplier {
 
@@ -26,13 +27,15 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 	private final String targetName;
 	private final Path buildDirectory;
 	private final DependencySupplier supplier;
-	private final List<String> allowedDirs;
+	private final List<String> filterDirs;
+	private final boolean filterAllows;
 
-	public FilterZipFileDependencySupplier(String targetName, Path buildDirectory, DependencySupplier supplier, List<String> allowedDirs) {
+	public FilterZipFileDependencySupplier(String targetName, Path buildDirectory, DependencySupplier supplier, List<String> fliterDirs, boolean filterAllows) {
 		this.targetName = targetName;
 		this.buildDirectory = buildDirectory;
 		this.supplier = supplier;
-		this.allowedDirs = allowedDirs;
+		this.filterDirs = fliterDirs;
+		this.filterAllows = filterAllows;
 	}
 
 	@Override
@@ -41,6 +44,13 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 		if (Files.exists(resultPath)) {
 			return resultPath;
 		}
+
+		Predicate<Path> allowDirsPredicate = filterAllows ?
+			path -> filterDirs.stream().anyMatch(dir -> path.startsWith(dir) || dir.startsWith(path.toString())) :
+			path -> filterDirs.stream().noneMatch(dir -> path.startsWith(dir));
+		Predicate<Path> allowFilePredicate = filterAllows ?
+			path -> filterDirs.stream().anyMatch(dir -> path.startsWith(dir)) :
+			path -> true;
 
 		ClassLoader loader = ManualGradleDependencySupplier.class.getClassLoader();
 		try (
@@ -53,7 +63,7 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 					if (dir.getNameCount() == 0) {
 						return FileVisitResult.CONTINUE;
 					}
-					if (allowedDirs.stream().anyMatch(allowedDir -> dir.startsWith(allowedDir) || allowedDir.startsWith(dir.toString()))) {
+					if (allowDirsPredicate.test(dir)) {
 						Files.createDirectories(targetZipFS.getPath(dir.toString()));
 						return FileVisitResult.CONTINUE;
 					} else {
@@ -62,7 +72,7 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 				}
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					if (allowedDirs.stream().anyMatch(allowedDir -> file.startsWith(allowedDir))) {
+					if (allowFilePredicate.test(file)) {
 						Files.copy(file, targetZipFS.getPath(file.toString()), StandardCopyOption.REPLACE_EXISTING);
 					}
 					return FileVisitResult.CONTINUE;
