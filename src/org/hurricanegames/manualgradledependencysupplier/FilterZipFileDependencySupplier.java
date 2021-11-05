@@ -62,7 +62,7 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 				}
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					if (allowedDirs.stream().anyMatch(allowedDir -> file.startsWith(file))) {
+					if (allowedDirs.stream().anyMatch(allowedDir -> file.startsWith(allowedDir))) {
 						Files.copy(file, targetZipFS.getPath(file.toString()), StandardCopyOption.REPLACE_EXISTING);
 					}
 					return FileVisitResult.CONTINUE;
