@@ -8,7 +8,7 @@ defaultTasks 'build'
 
 
 group 'org.hurricanegames'
-version '2.0'
+version '2.1'
 
 
 import java.nio.file.Path
@@ -38,7 +38,6 @@ sourceSets {
 
 repositories {
 	mavenCentral()
-	jcenter()
 }
 
 compileJava {
