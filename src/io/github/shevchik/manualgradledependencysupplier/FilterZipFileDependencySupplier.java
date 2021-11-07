@@ -1,4 +1,4 @@
-package org.hurricanegames.manualgradledependencysupplier;
+package io.github.shevchik.manualgradledependencysupplier;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,25 +24,31 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 		return env;
 	}
 
-	private final String targetName;
-	private final Path buildDirectory;
 	private final DependencySupplier supplier;
 	private final List<String> filterDirs;
 	private final boolean filterAllows;
+	private final Path workDirectory;
+	private final String targetName;
 
-	public FilterZipFileDependencySupplier(String targetName, Path buildDirectory, DependencySupplier supplier, List<String> fliterDirs, boolean filterAllows) {
-		this.targetName = targetName;
-		this.buildDirectory = buildDirectory;
+	public FilterZipFileDependencySupplier(DependencySupplier supplier, List<String> filterDirs, boolean filterAllows, Path workDirectory) {
+		this(supplier, filterDirs, filterAllows, workDirectory, null);
+	}
+
+	public FilterZipFileDependencySupplier(DependencySupplier supplier, List<String> filterDirs, boolean filterAllows, Path workDirectory, String targetName) {
 		this.supplier = supplier;
-		this.filterDirs = fliterDirs;
+		this.filterDirs = filterDirs;
 		this.filterAllows = filterAllows;
+		this.workDirectory = workDirectory;
+		this.targetName = targetName;
 	}
 
 	@Override
-	public Path supply(Path targetDirectory) throws Exception {
-		Path resultPath = targetDirectory.resolve(targetName).toAbsolutePath();
-		if (Files.exists(resultPath)) {
-			return resultPath;
+	public Path supply() throws Exception {
+		Path supplierPath = supplier.supply();
+
+		Path resultArtifactPath = workDirectory.resolve(targetName != null ? targetName : supplierPath.getFileName().toString());
+		if (Files.exists(resultArtifactPath)) {
+			return resultArtifactPath;
 		}
 
 		Predicate<Path> allowDirsPredicate = filterAllows ?
@@ -54,8 +60,8 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 
 		ClassLoader loader = ManualGradleDependencySupplier.class.getClassLoader();
 		try (
-			FileSystem sourceZipFS = FileSystems.newFileSystem(supplier.supply(buildDirectory), loader);
-			FileSystem targetZipFS = FileSystems.newFileSystem(new URI("jar:file:" + resultPath.toUri().getPath()), zipFSEnv, loader)
+			FileSystem sourceZipFS = FileSystems.newFileSystem(supplierPath, loader);
+			FileSystem targetZipFS = FileSystems.newFileSystem(new URI("jar:file:" + resultArtifactPath.toUri().getPath()), zipFSEnv, loader)
 		) {
 			Files.walkFileTree(sourceZipFS.getRootDirectories().iterator().next(), new SimpleFileVisitor<Path>() {
 				@Override
@@ -80,7 +86,7 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 			});
 		}
 
-		return resultPath;
+		return resultArtifactPath;
 	}
 
 }

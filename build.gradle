@@ -7,8 +7,8 @@ plugins {
 defaultTasks 'build'
 
 
-group 'org.hurricanegames'
-version '2.1'
+group 'io.github.shevchik'
+version '3.0'
 
 
 import java.nio.file.Path
@@ -52,8 +52,8 @@ jar {
 gradlePlugin {
     plugins {
         ManualGradleDependencySupplier {
-            id = 'org.hurricanegames.ManualGradleDependencySupplier'
-            implementationClass = 'org.hurricanegames.manualgradledependencysupplier.ManualGradleDependencySupplier'
+            id = 'io.github.shevchik.ManualGradleDependencySupplier'
+            implementationClass = 'io.github.shevchik.manualgradledependencysupplier.ManualGradleDependencySupplier'
         }
     }
 }
