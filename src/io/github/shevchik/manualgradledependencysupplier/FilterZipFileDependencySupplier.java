@@ -51,6 +51,8 @@ public class FilterZipFileDependencySupplier implements DependencySupplier {
 			return resultArtifactPath;
 		}
 
+		Files.createDirectories(workDirectory);
+
 		Predicate<Path> allowDirsPredicate = filterAllows ?
 			path -> filterDirs.stream().anyMatch(dir -> path.startsWith(dir) || dir.startsWith(path.toString())) :
 			path -> filterDirs.stream().noneMatch(dir -> path.startsWith(dir));
