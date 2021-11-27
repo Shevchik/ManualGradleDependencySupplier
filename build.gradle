@@ -1,5 +1,6 @@
 plugins {
 	id 'java-gradle-plugin'
+	id 'com.gradle.plugin-publish' version '0.17.0'
 	id 'maven-publish'
 }
 
@@ -8,7 +9,7 @@ defaultTasks 'build'
 
 
 group 'io.github.shevchik'
-version '3.0'
+version '3.1'
 
 
 import java.nio.file.Path
@@ -49,13 +50,22 @@ jar {
 	from sourceSets.main.java.srcDirs
 }
 
+
 gradlePlugin {
     plugins {
         ManualGradleDependencySupplier {
             id = 'io.github.shevchik.ManualGradleDependencySupplier'
             implementationClass = 'io.github.shevchik.manualgradledependencysupplier.ManualGradleDependencySupplier'
+            displayName = 'Manual Dependency Supplier'
+            description = 'Provide project dependencies from url or programatically'
         }
     }
+}
+
+pluginBundle {
+	website = 'https://github.com/Shevchik/ManualGradleDependencySupplier'
+	vcsUrl = 'https://github.com/Shevchik/ManualGradleDependencySupplier'
+	tags = ['dependency']
 }
 
 
